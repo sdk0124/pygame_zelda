@@ -8,6 +8,7 @@ class Player(pygame.sprite.Sprite):
         image_path = os.path.join(base_path, '../graphics/test/player.png')
         self.image = pygame.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect(topleft = position)
+        self.hitbox = self.rect.inflate(0, -26) # 히트박스 설정 (상,하로 13px씩 감소)
 
         self.direction = pygame.math.Vector2()
         self.speed = 5
@@ -40,38 +41,34 @@ class Player(pygame.sprite.Sprite):
             self.direction = self.direction.normalize()
 
         # 자연스로운 충돌 확인을 위해 x, y 따로 구분
-        self.rect.x += self.direction.x * speed
+        self.hitbox.x += self.direction.x * speed
         self.collision('horizontal')
-        self.rect.y += self.direction.y * speed
+        self.hitbox.y += self.direction.y * speed
         self.collision('vertical')
-
-        # 이렇게 코드를 작성하면 방향키를 2개 눌렀을 때 밀려남.
-        # self.rect.center += self.direction * speed
-        # self.collision('horizontal')
-        # self.collision('vertical')
+        self.rect.center = self.hitbox.center
 
     def collision(self, direction):
         if direction == 'horizontal':
             for sprite in self.obstacle_sprites:
-                if sprite.rect.colliderect(self.rect):
+                if sprite.hitbox.colliderect(self.hitbox):
                     # 오른쪽으로 이동 중 충돌 : 장애물의 왼쪽 부분에 충돌했음
                     if self.direction.x > 0: # moving right
-                        self.rect.right = sprite.rect.left
+                        self.hitbox.right = sprite.hitbox.left
 
                     # 왼쪽으로 이동 중 충돌 : 장애물의 오른쪽 부분에 충돌했음
                     if self.direction.x < 0: # moving left
-                        self.rect.left = sprite.rect.right
+                        self.hitbox.left = sprite.hitbox.right
 
         if direction == 'vertical':
             for sprite in self.obstacle_sprites:
-                if sprite.rect.colliderect(self.rect):
+                if sprite.hitbox.colliderect(self.hitbox):
                     # 아랫쪽으로 이동 중 충돌 : 장애물의 위쪽 부분에 충돌했음
                     if self.direction.y > 0: # moving down
-                        self.rect.bottom = sprite.rect.top
+                        self.hitbox.bottom = sprite.hitbox.top
 
                     # 위쪽으로 이동 중 충돌 : 장애물의 아랫쪽 부분에 충돌했음
                     if self.direction.y < 0: # moving left
-                        self.rect.top = sprite.rect.bottom
+                        self.hitbox.top = sprite.hitbox.bottom
 
     def update(self):
         self.input()

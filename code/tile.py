@@ -8,3 +8,4 @@ class Tile(pygame.sprite.Sprite):
         image_path = os.path.join(base_path, '../graphics/test/rock.png')
         self.image = pygame.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect(topleft = position)
+        self.hitbox = self.rect.inflate(0, -10) # hitbox 설정 (세로로 상 하 5px만큼 줄인다.)
