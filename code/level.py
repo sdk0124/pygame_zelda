@@ -1,8 +1,9 @@
 # level setting
-import pygame, os
+import pygame, os, random
 from setting import *
 from tile import Tile
 from player import Player
+from support import import_csv_layout, import_folder
 from debug import debug
 
 class Level:
@@ -19,13 +20,40 @@ class Level:
         self.create_map()
 
     def create_map(self):
-        # for row_idx, row in enumerate(WORLD_MAP):
-        #     for col_idx, col in enumerate(row):
-        #         x = col_idx * TILESIZE
-        #         y = row_idx * TILESIZE
-        #         if col == 'x':
-        #             Tile((x, y), [self.visible_sprites, self.obstacle_sprites])
-        #         if col == 'p':
+        base_path = os.path.dirname(__file__)
+        boundary_path = os.path.join(base_path, '../map/map_FloorBlocks.csv')
+        map_grass_path = os.path.join(base_path, '../map/map_Grass.csv')
+        objects_path = os.path.join(base_path, '../map/map_Objects.csv')
+        layouts = {
+            'boundary' : import_csv_layout(boundary_path),
+            'grass': import_csv_layout(map_grass_path),
+            'object': import_csv_layout(objects_path)
+        }
+
+        graphics_grass_path = os.path.join(base_path, '../graphics/grass')
+        graphics_objects_path = os.path.join(base_path, '../graphics/objects')
+        graphics = {
+            'grass' : import_folder(graphics_grass_path),
+            'objects' : import_folder(graphics_objects_path)
+        }
+        print(graphics)
+
+        for style, layout in layouts.items():
+            for row_idx, row in enumerate(layout):
+                for col_idx, col in enumerate(row):
+                    if col != '-1': # -1 : 비어있음.
+                        x = col_idx * TILESIZE
+                        y = row_idx * TILESIZE
+                        if style == 'boundary':
+                            Tile((x, y), [self.obstacle_sprites], 'invisible')
+                        if style == 'grass':
+                            grass_image_list = graphics['grass']
+                            selected_grass_image = random.choice(grass_image_list)
+                            Tile((x, y), [self.visible_sprites, self.obstacle_sprites], 'grass', selected_grass_image)                            
+                        if style == 'object':
+                            selected_object_image = graphics['objects'][int(col)]
+                            Tile((x, y), [self.visible_sprites, self.obstacle_sprites], 'object', selected_object_image)
+        
         self.player = Player((2000, 1430), [self.visible_sprites], self.obstacle_sprites)
         
     def run(self):
